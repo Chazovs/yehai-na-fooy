@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Моё Node-приложение!</title>
+    <script src="//unpkg.com/brain.js"></script>
+    <!-- CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+          crossorigin="anonymous">
+    <style>
+        body { padding-top: 50px; }
+    </style>
+</head>
+<body class="container">
+
+<div class="jumbotron">
+    <form id="myForm">
+        <div>
+            <input name="accuracy" type="number" alt="Точность" placeholder="точность"value="0.03" >
+            <input name="attempts" type="number" alt="количество попыток" placeholder="количество попыток" value="1000">
+        </div>
+        <div>
+            <input name="passphrase" type="text" alt="на какой фразе проверять" placeholder="на какой фразе проверять" value="I feel great">
+        </div>
+        <div><button type="button" onclick="go(document.getElementById('myForm'))">Отправить</button></div>
+
+    </form>
+</div>
+<!--<div class="jumbotron">
+    <input name="passphrase" type="text" alt="проверочная фраза" placeholder="проверочная фраза">
+    <button type="button" onclick="go(document.getElementById('myForm'))">Проверить</button>
+
+</div>-->
+<div id="result"></div>
+<script>
+
+    /*const brain = require('brain.js');*/
+    function go(form) {
+
+        const accuracy = form.accuracy.value;
+        const attempts = form.attempts.value;
+        const passphrase = form.passphrase.value;
+
+        const net = new brain.recurrent.LSTM(); //тип сети
+
+        const data = [
+            { input: 'I feel great about the world!', output: 'happy' },
+            { input: 'The world is a terrible place!', output: 'sad' },
+        ];
+
+        const config = {
+            iterations:     attempts, // максимальное количество раз для повторения обучающих данных -> число больше 0
+            errorThresh:    accuracy, // допустимый процент ошибок из данных обучения -> число от 0 до 1
+            log:            true, // Значение true, чтобы использовать console.log, когда функция указана, она используется -> либо true, либо функция
+            /*logPeriod:      10, // итерации между выходом из системы -> число больше 0
+            learningRate:   0.3, // весы с дельтой для повышения скорости тренировки -> число от 0 до 1
+            momentum:       0.1, // масштабируется со значением изменения следующего слоя -> число от 0 до 1
+            callback:       null, // a periodic call back that can be triggered while training --> null or function*/
+            callbackPeriod: 10, // the number of iterations through the training data between callback calls --> number greater than 0
+            timeout:        60000 // сейчас стоит 1 минута. максимальное количество миллисекунд для обучения -> число больше 0
+        }
+
+        const inputAi = net.train(data, config);
+
+        const outputAi = net.run(passphrase); // 'happy'
+console.log(outputAi);
+
+    }
+
+
+</script>
+</body>
+</html>
