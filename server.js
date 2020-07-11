@@ -4,6 +4,8 @@ var express = require('express');
 // создаём Express-приложение
 var app = express();
 
+app.use(express.static(__dirname + '/public'));
+
 // создаём маршрут для главной страницы
 // http://localhost:8080/
 app.get('/', function(req, res) {

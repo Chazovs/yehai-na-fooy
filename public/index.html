@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Ехай на Fooy</title>
+	<script src="//unpkg.com/brain.js"></script>
+	<!-- CSS -->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+	      crossorigin="anonymous">
+
+	<link rel="stylesheet" href="styles/main.css">
+</head>
+<body class="container">
+
+<h1>Ехай на fooy</h1>
+<p>Первая в мире компьютерная игра, целью которой является отправка искусственного интелекта на Fooy</p>
+
+
+<div id="menu">
+	<a href="">Правила</a>
+	<a href="">Сюжет</a>
+	<a href="">Задание №1</a>
+</div>
+<div class="jumbotron">
+
+	<div id="plot" hidden>
+		<div>
+			сюда нужен слайдер
+		</div>
+	</div>
+	<div id='tasks'>
+		<div>
+			<h4>Задание №1</h4>
+			<p>Научить искусственный интеллект отвечать на вопросы о нашей планете.</p>
+		</div>
+
+		<form id="myForm">
+			<div>
+				точность
+				<input name="accuracy" type="number" alt="Точность" placeholder="точность" value="0.03">
+				<br>
+				количество циклов обучения
+				<input name="attempts" type="number" alt="количество попыток" placeholder="количество попыток" value="1000">
+			</div>
+			<div>
+				на какой фразе проверяем
+				<input name="passphrase" type="text" alt="на какой фразе проверять" placeholder="на какой фразе проверять" value="I feel great">
+			</div>
+			<div id="lerningTextTableDiv">
+				<br>
+				обучающая выборка
+				<button type="button" onclick="addLerningText()">+</button>
+				<br>
+
+				<div class="divTable" id="lerningTextTable">
+					<div class="divTableBody">
+						<div class="divTableRowTitle">
+							<div class="divTableCellTitle">Текст</div>
+							<div class="divTableCellTitle">Реакция</div>
+						</div>
+						<div class="divTableRow">
+							<div class="divTableCell"><input class='lerninigSimpleText' id="lerninigSimpleText0" type="text"></div>
+							<div class="divTableCell"><input class='learningReaction' id="learningReaction0" type="text"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<button type="button" onclick="go(document.getElementById('myForm'))">Начать обучение</button>
+				<button type="button" onclick="testAi()">Тестировать</button>
+			</div>
+		</form>
+	</div>
+	<div id="details"></div>
+	<div id="result"></div>
+	<div id="lerning"></div>
+</div>
+<script>
+	let lerarninTextCounter = 1;
+	let learningResult = {};
+	let passphrase = '';
+
+	function addLerningText() {
+		const table      = document.getElementById('lerningTextTable');
+		const newRow     = document.createElement('div');
+		newRow.className = "divTableRow";
+		newRow.innerHTML = "<div class='divTableCell'><input class='lerninigSimpleText' id='lerninigSimpleText" + lerarninTextCounter + "' type='textarea'></div>\n" +
+			"<div class='divTableCell'><input class='learningReaction' id='learningReaction" + lerarninTextCounter + "' type='text'></div>";
+		lerarninTextCounter++;
+		table.appendChild(newRow);
+	}
+
+	/*const brain = require('brain.js');*/
+	function go(form) {
+
+		const accuracy   = form.accuracy.value;
+		const attempts   = form.attempts.value;
+		passphrase = form.passphrase.value;
+
+
+		const lerninigSimpleText = document.querySelectorAll(".lerninigSimpleText");
+		const learningReaction   = document.querySelectorAll(".learningReaction");
+		const learningArray      = [];
+		for (var i = 0; i < lerninigSimpleText.length; i++) {
+
+			learningArray[i] = {
+				input:  lerninigSimpleText[i].value,
+				output: learningReaction[i].value
+			};
+		}
+
+		const net = new brain.recurrent.LSTM(); //тип сети
+
+		const data = learningArray;
+
+		const config = {
+			iterations:     attempts, // максимальное количество раз для повторения обучающих данных -> число больше 0
+			errorThresh:    accuracy, // допустимый процент ошибок из данных обучения -> число от 0 до 1
+			log:            (val) => {
+				const details = document.getElementById('details')
+				details.append(val);
+				const br = document.createElement('br');
+				details.append(br);
+			},
+			//true, // Значение true, чтобы использовать console.log, когда функция указана, она используется -> либо true, либо функция
+			/*logPeriod:      10, // итерации между выходом из системы -> число больше 0
+			learningRate:   0.3, // весы с дельтой для повышения скорости тренировки -> число от 0 до 1
+			momentum:       0.1, // масштабируется со значением изменения следующего слоя -> число от 0 до 1
+			callback:       null, // a periodic call back that can be triggered while training --> null or function*/
+			callbackPeriod: 10, // the number of iterations through the training data between callback calls --> number greater than 0
+			timeout:        60000 // сейчас стоит 1 минута. максимальное количество миллисекунд для обучения -> число больше 0
+		}
+
+		const inputAi = net.train(data, config);
+		learningResult = net;
+
+
+	}
+
+	function testAi() {
+		const outputAi = learningResult.run(passphrase);
+		const learning = document.getElementById('lerning');
+		learning.innerText = outputAi;
+	}
+
+</script>
+</body>
+</html>
