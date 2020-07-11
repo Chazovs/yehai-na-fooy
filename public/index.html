@@ -17,12 +17,19 @@
 
 
 <div id="menu">
-	<a href="">Правила</a>
-	<a href="">Сюжет</a>
+	<a href="#" onclick="showRules()">Правила</a>
+	<a href="#" onclick="showPlot()">Сюжет</a>
 	<a href="">Задание №1</a>
 </div>
 <div class="jumbotron">
 
+	<div id="rules" hidden>
+		<div>
+			После обучения нейронной сети вам будет предложено несколько проверочных вопросов.
+			<br>
+			Вы выбираете, какой из вопросов будет задан нейронной сети. Если ответ правильный, то вы получаете ключ от следующего уровня.
+		</div>
+	</div>
 	<div id="plot" hidden>
 		<div>
 			сюда нужен слайдер
@@ -42,10 +49,7 @@
 				количество циклов обучения
 				<input name="attempts" type="number" alt="количество попыток" placeholder="количество попыток" value="1000">
 			</div>
-			<div>
-				на какой фразе проверяем
-				<input name="passphrase" type="text" alt="на какой фразе проверять" placeholder="на какой фразе проверять" value="I feel great">
-			</div>
+
 			<div id="lerningTextTableDiv">
 				<br>
 				обучающая выборка
@@ -67,18 +71,40 @@
 			</div>
 			<div>
 				<button type="button" onclick="go(document.getElementById('myForm'))">Начать обучение</button>
-				<button type="button" onclick="testAi()">Тестировать</button>
+
 			</div>
 		</form>
 	</div>
 	<div id="details"></div>
-	<div id="result"></div>
+	<div id="result">
+		<div>
+			<br>
+			<br>
+			<a href="#" onclick="insertTestText(this)">номер нашей планеты от солнца</a><br>
+			<a href="#" onclick="insertTestText(this)">как называется ваша планета</a><br>
+			<input id="passphrase" name="passphrase" type="text" alt="на какой фразе проверять" placeholder="на какой фразе проверять">
+		</div>
+		<button type="button" onclick="testAi()">Тестировать</button>
+	</div>
 	<div id="lerning"></div>
 </div>
 <script>
+
+	function insertTestText(val) {
+		document.getElementById('passphrase').value = val.innerText;
+	}
+
+	function showRules() {
+		document.getElementById('rules').toggleAttribute('hidden');
+	}
+
+	function showPlot() {
+		document.getElementById('plot').toggleAttribute('hidden');
+	}
+
 	let lerarninTextCounter = 1;
-	let learningResult = {};
-	let passphrase = '';
+	let learningResult;
+	let passphrase          = '';
 
 	function addLerningText() {
 		const table      = document.getElementById('lerningTextTable');
@@ -93,9 +119,8 @@
 	/*const brain = require('brain.js');*/
 	function go(form) {
 
-		const accuracy   = form.accuracy.value;
-		const attempts   = form.attempts.value;
-		passphrase = form.passphrase.value;
+		const accuracy = form.accuracy.value;
+		const attempts = form.attempts.value;
 
 
 		const lerninigSimpleText = document.querySelectorAll(".lerninigSimpleText");
@@ -131,16 +156,22 @@
 			timeout:        60000 // сейчас стоит 1 минута. максимальное количество миллисекунд для обучения -> число больше 0
 		}
 
-		const inputAi = net.train(data, config);
+		const inputAi  = net.train(data, config);
 		learningResult = net;
 
 
 	}
 
 	function testAi() {
-		const outputAi = learningResult.run(passphrase);
-		const learning = document.getElementById('lerning');
-		learning.innerText = outputAi;
+		if (learningResult === undefined) {
+			alert('Эй, ученый! Сначала обучи искусственный интелект!');
+			return;
+		} else {
+			passphrase         = document.getElementById('passphrase').value;
+			const outputAi     = learningResult.run(passphrase);
+			const learning     = document.getElementById('lerning');
+			learning.innerText = outputAi;
+		}
 	}
 
 </script>
